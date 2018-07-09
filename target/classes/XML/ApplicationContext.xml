@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 设置自动扫描 -->
+    <context:component-scan base-package="*"/>
+
+    <!-- 引入外部数据 -->
+    <context:property-placeholder location="classpath:db.properties"/>
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="driverClassName" value="${jdbc.driver}"/>
+
+        <property name="initialSize" value="${jdbc.initPoolSize}"/>
+        <property name="maxActive" value="${jdbc.maxPoolSize}"/>
+    </bean>
+
+    <!-- 配置SessionFactory -->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <!-- 配置数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 配置Hibernate原生属性 -->
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
+                <prop key="format_sql">true</prop>
+                <prop key="hibernate.show_sql"></prop>
+                <prop key="hbm2ddl.auto">update</prop>
+            </props>
+        </property>
+        <!-- 配置映射文件 -->
+        <property name="mappingLocations" value="classpath:/XML/*.hbm.xml"/>
+    </bean>
+
+    <!-- 开始配置事务 -->
+    <!-- 1.配置事务管理器 -->
+    <bean class="org.springframework.orm.hibernate4.HibernateTransactionManager"
+          id="transactionManager">
+        <!-- 配置数据源 -->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 配置SessionFactory -->
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- 2.启用事务注解 -->
+    <aop:annotation-driven/>
+
+</beans>
